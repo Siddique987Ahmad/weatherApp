@@ -10,15 +10,19 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { toggleTheme } from '../src/themeSlice';
+import { useDispatch, useSelector } from 'react-redux';
 
 const API_KEY = 'ea16cd69c67eafc3c5d0be954be9650a';
 
-const Weather = ()=> {
+const Weather = ({navigation})=> {
   const [city, setCity] = useState('');
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
+  const darkMode=useSelector(state=>state.theme.darkMode)
+  const dispatch=useDispatch()
+  const styles=getStyles(darkMode)
   useEffect(() => {
     const loadLastCity = async () => {
       const lastCity = await AsyncStorage.getItem('lastCity');
@@ -63,7 +67,12 @@ const Weather = ()=> {
   //   <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'yellow'}}>
   //   <Text style={{fontSize: 24}}>Hello World</Text>
   // </View>
-    <View style={[styles.container, {borderWidth: 2, borderColor: 'red'}]}>
+    <View style={styles.container}>
+    <TouchableOpacity onPress={()=>dispatch(toggleTheme())}>
+    <Text style={styles.toggleBtn}>
+          Switch to {darkMode ? 'Light' : 'Dark'} Mode
+        </Text>
+    </TouchableOpacity>
       <TextInput
         style={styles.input}
         placeholder="Enter city"
@@ -91,18 +100,29 @@ const Weather = ()=> {
               uri: `https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`,
             }}
           />
+          <TouchableOpacity 
+          style={styles.createButton}
+          onPress={()=>navigation.navigate('Counter')}
+          >
+         <Text style={styles.createButtonText}>Counter</Text>
+          </TouchableOpacity>
         </View>
       )}
     </View>
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles= darkMode => StyleSheet.create({
     container: {
       flex: 1,
       padding: 20,
       justifyContent: 'center',
-      backgroundColor: '#f5f5f5',  // Light background for better contrast
+      backgroundColor: darkMode ? '#000' : '#fff',    },
+      toggleBtn: {
+      textAlign: 'center',
+      color: darkMode ? '#fff' : '#000',
+      marginBottom: 20,
+      fontSize: 18,
     },
     input: {
       width: '100%',
@@ -180,5 +200,21 @@ const styles = StyleSheet.create({
       height: 80,
       marginVertical: 10,
     },
+    createButton: {
+    backgroundColor: '#007AFF',
+    padding: 15,
+    borderRadius: 5,
+    alignItems: 'center',
+    margin: 10,
+    position: 'absolute',
+    bottom: 10,
+    left: 10,
+    right: 10,
+  },
+  createButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   });
 export default Weather;
